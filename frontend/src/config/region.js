@@ -4,8 +4,8 @@
  * 카테고리 slug 는 라우트(/board/:category)와 백엔드 posts.category 컬럼에
  * 그대로 쓰이므로 영문 소문자로 고정한다.
  *
- * 서울 권역 제공 데이터에는 음식점(contenttypeid=39) 파일이 없어
- * 의뢰서 와이어프레임의 '맛집' 자리를 '문화시설'로 대체했다.
+ * contentTypeId 는 TourAPI 콘텐츠 타입 기준(관광지 12 · 문화시설 14 ·
+ * 축제공연행사 15 · 여행코스 25 · 레포츠 28 · 숙박 32 · 쇼핑 38).
  */
 export const REGION = {
   name: '서울',
@@ -24,6 +24,14 @@ export const CATEGORIES = [
     description: '고궁·공원·명소 이야기',
   },
   {
+    slug: 'leisure',
+    label: '레포츠',
+    icon: '🏄',
+    contentTypeId: '28',
+    dataset: 'leisure',
+    description: '등산·수상·액티비티 정보',
+  },
+  {
     slug: 'culture',
     label: '문화시설',
     icon: '🏛',
@@ -32,8 +40,32 @@ export const CATEGORIES = [
     description: '미술관·박물관·공연장',
   },
   {
+    slug: 'shopping',
+    label: '쇼핑',
+    icon: '🛍',
+    contentTypeId: '38',
+    dataset: 'shopping',
+    description: '전통시장·거리·아울렛',
+  },
+  {
+    slug: 'lodging',
+    label: '숙박',
+    icon: '🛏',
+    contentTypeId: '32',
+    dataset: 'lodging',
+    description: '호텔·게스트하우스 후기',
+  },
+  {
+    slug: 'course',
+    label: '여행코스',
+    icon: '🗺',
+    contentTypeId: '25',
+    dataset: 'courses',
+    description: '테마별 추천 코스',
+  },
+  {
     slug: 'festival',
-    label: '축제·행사',
+    label: '축제행사',
     icon: '🎆',
     contentTypeId: '15',
     dataset: 'festivals',

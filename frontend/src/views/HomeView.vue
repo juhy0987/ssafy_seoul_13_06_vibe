@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import HeroBanner from '@/components/home/HeroBanner.vue'
 import CategoryNav from '@/components/home/CategoryNav.vue'
+import SeoulMap from '@/components/home/SeoulMap.vue'
 import SpotGrid from '@/components/home/SpotGrid.vue'
 import PostList from '@/components/board/PostList.vue'
 import SectionHeading from '@/components/common/SectionHeading.vue'
@@ -11,16 +12,13 @@ import { listRecentPosts } from '@/api/posts'
 import { CATEGORIES } from '@/config/region'
 
 const attractions = ref([])
-const festivals = ref([])
 const posts = ref([])
 
-const counts = ref({ attractions: 0, festivals: 0 })
+const counts = ref({ attractions: 0 })
 
 const loadingSpots = ref(true)
-const loadingFestivals = ref(true)
 const loadingPosts = ref(true)
 const spotsError = ref('')
-const festivalsError = ref('')
 
 async function loadSpots() {
   try {
@@ -34,18 +32,6 @@ async function loadSpots() {
   }
 }
 
-async function loadFestivals() {
-  try {
-    const response = await listSpots('festivals', { limit: 4 })
-    festivals.value = response.items
-    counts.value.festivals = response.total
-  } catch (err) {
-    festivalsError.value = `${err.message} — 백엔드 /api/spots 연결을 확인해주세요.`
-  } finally {
-    loadingFestivals.value = false
-  }
-}
-
 async function loadPosts() {
   posts.value = await listRecentPosts(5)
   loadingPosts.value = false
@@ -53,16 +39,25 @@ async function loadPosts() {
 
 onMounted(() => {
   loadSpots()
-  loadFestivals()
   loadPosts()
 })
 </script>
 
 <template>
   <div class="lh-container home">
-    <HeroBanner :spot-count="counts.attractions" :festival-count="counts.festivals" />
+    <HeroBanner :spot-count="counts.attractions" />
 
     <CategoryNav />
+
+    <section class="home__section">
+      <SectionHeading
+        eyebrow="Map"
+        title="지도로 보기"
+        description="서울 권역 지도에서 위치를 확인해보세요"
+      />
+
+      <SeoulMap />
+    </section>
 
     <section class="home__section">
       <SectionHeading
@@ -78,27 +73,6 @@ onMounted(() => {
       </SectionHeading>
 
       <SpotGrid :spots="attractions" :loading="loadingSpots" :error="spotsError" />
-    </section>
-
-    <section class="home__section">
-      <SectionHeading
-        eyebrow="Festivals"
-        title="열리는 축제·행사"
-        description="지금 서울에서 만날 수 있는 축제와 공연"
-      >
-        <template #action>
-          <BaseButton variant="quiet" size="sm" :to="{ name: 'board', params: { category: 'festival' } }">
-            게시판 보기 ›
-          </BaseButton>
-        </template>
-      </SectionHeading>
-
-      <SpotGrid
-        :spots="festivals"
-        :loading="loadingFestivals"
-        :error="festivalsError"
-        badge="축제"
-      />
     </section>
 
     <section class="home__section">

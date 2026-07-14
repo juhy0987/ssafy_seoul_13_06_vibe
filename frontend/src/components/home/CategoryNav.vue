@@ -20,7 +20,7 @@ import { CATEGORIES } from '@/config/region'
 <style scoped>
 .cats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 0.75rem;
 }
 

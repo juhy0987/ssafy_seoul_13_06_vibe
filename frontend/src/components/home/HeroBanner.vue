@@ -3,7 +3,6 @@ import { REGION } from '@/config/region'
 
 defineProps({
   spotCount: { type: Number, default: 0 },
-  festivalCount: { type: Number, default: 0 },
 })
 </script>
 
@@ -19,10 +18,6 @@ defineProps({
       <div class="hero__stat">
         <dt>관광지</dt>
         <dd>{{ spotCount.toLocaleString('ko-KR') }}</dd>
-      </div>
-      <div class="hero__stat">
-        <dt>축제·행사</dt>
-        <dd>{{ festivalCount.toLocaleString('ko-KR') }}</dd>
       </div>
     </dl>
   </section>

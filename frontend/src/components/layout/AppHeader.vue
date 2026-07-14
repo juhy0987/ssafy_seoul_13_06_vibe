@@ -126,14 +126,22 @@ function submitSearch() {
   display: flex;
   gap: 0.35rem;
   margin-right: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav__link {
+  flex-shrink: 0;
   font-size: var(--lh-text-sm);
   font-weight: 600;
   color: var(--lh-ink-soft);
   padding: 0.35rem 0.7rem;
   border-radius: var(--lh-radius-full);
+  white-space: nowrap;
   transition: background-color 0.15s var(--lh-ease), color 0.15s var(--lh-ease);
 }
 
