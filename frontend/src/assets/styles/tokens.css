@@ -1,0 +1,105 @@
+/*
+ * LocalHub 디자인 토큰
+ * 색상은 라이트/다크 두 테마 모두 이 파일에서만 정의한다.
+ * 컴포넌트는 항상 var(--lh-*) 를 통해서만 색을 참조한다.
+ */
+
+:root {
+  /* --- 색상: 라이트 --- */
+  --lh-bg: #f6f5f2;
+  --lh-surface: #ffffff;
+  --lh-surface-2: #eeece5;
+  --lh-ink: #14161b;
+  --lh-ink-soft: #63666f;
+  --lh-ink-faint: #9a9ca3;
+  --lh-border: #e2dfd6;
+  --lh-border-strong: #cfccc0;
+  --lh-accent: #ff5433;
+  --lh-accent-strong: #e2431f;
+  --lh-accent-soft: #ffe6de;
+  --lh-accent-ink: #fff8f5;
+  --lh-danger: #c94a3c;
+  --lh-danger-soft: #f6dcd7;
+
+  --lh-shadow-card: 0 1px 2px rgba(20, 22, 27, 0.04);
+  --lh-shadow-float: 0 10px 28px rgba(20, 22, 27, 0.18);
+  --lh-shadow-modal: 0 20px 48px rgba(20, 22, 27, 0.2);
+
+  /* --- 타이포 --- */
+  --lh-font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --lh-font-mono: ui-monospace, 'SF Mono', 'Roboto Mono', Consolas, 'D2Coding', monospace;
+
+  --lh-text-xs: 0.72rem;
+  --lh-text-sm: 0.82rem;
+  --lh-text-base: 0.95rem;
+  --lh-text-lg: 1.05rem;
+  --lh-text-xl: 1.4rem;
+  --lh-text-2xl: 2.1rem;
+
+  /* --- 간격 / 라운드 --- */
+  --lh-gap-1: 0.25rem;
+  --lh-gap-2: 0.5rem;
+  --lh-gap-3: 0.75rem;
+  --lh-gap-4: 1rem;
+  --lh-gap-5: 1.5rem;
+  --lh-gap-6: 2rem;
+  --lh-gap-7: 3rem;
+  --lh-gap-8: 4.5rem;
+
+  --lh-radius-s: 8px;
+  --lh-radius-m: 12px;
+  --lh-radius-l: 18px;
+  --lh-radius-full: 999px;
+
+  --lh-container: 1120px;
+  --lh-header-h: 60px;
+
+  --lh-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* --- 색상: 다크 (OS 설정) --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --lh-bg: #101115;
+    --lh-surface: #191b20;
+    --lh-surface-2: #21242b;
+    --lh-ink: #edeeef;
+    --lh-ink-soft: #a3a6b0;
+    --lh-ink-faint: #75787f;
+    --lh-border: #2b2e36;
+    --lh-border-strong: #3a3e48;
+    --lh-accent: #ff6a4a;
+    --lh-accent-strong: #ff8768;
+    --lh-accent-soft: #3a241f;
+    --lh-accent-ink: #191b20;
+    --lh-danger: #f0776a;
+    --lh-danger-soft: #3d2320;
+
+    --lh-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --lh-shadow-float: 0 10px 28px rgba(0, 0, 0, 0.55);
+    --lh-shadow-modal: 0 20px 48px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* --- 색상: 다크 (사용자 토글) --- */
+:root[data-theme='dark'] {
+  --lh-bg: #101115;
+  --lh-surface: #191b20;
+  --lh-surface-2: #21242b;
+  --lh-ink: #edeeef;
+  --lh-ink-soft: #a3a6b0;
+  --lh-ink-faint: #75787f;
+  --lh-border: #2b2e36;
+  --lh-border-strong: #3a3e48;
+  --lh-accent: #ff6a4a;
+  --lh-accent-strong: #ff8768;
+  --lh-accent-soft: #3a241f;
+  --lh-accent-ink: #191b20;
+  --lh-danger: #f0776a;
+  --lh-danger-soft: #3d2320;
+
+  --lh-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --lh-shadow-float: 0 10px 28px rgba(0, 0, 0, 0.55);
+  --lh-shadow-modal: 0 20px 48px rgba(0, 0, 0, 0.6);
+}
