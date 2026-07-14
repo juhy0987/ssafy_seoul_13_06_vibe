@@ -13,12 +13,13 @@ PW_MISMATCH = {403: {"description": "비밀번호 불일치"}, **NOT_FOUND}
 @router.get("", response_model=schemas.PostListResponse, summary="게시글 목록 조회")
 def list_posts(
     category: schemas.PostCategory | None = Query(default=None, description="카테고리 필터"),
-    q: str | None = Query(default=None, description="제목·내용 검색어"),
+    spot_id: str | None = Query(default=None, description="장소(contentid) 필터"),
+    q: str | None = Query(default=None, description="제목·내용·장소명 검색어"),
     page: int = Query(default=1, ge=1),
     size: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
-    return service.list_posts(db, category, q, page, size)
+    return service.list_posts(db, category, spot_id, q, page, size)
 
 
 @router.get(

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.domains.posts import schemas
 from app.domains.posts.models import Post
+from app.domains.tourism import service as tourism
 
 
 def _get_or_404(db: Session, post_id: int) -> Post:
@@ -19,9 +20,17 @@ def _verify_password(post: Post, password: str) -> None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "비밀번호가 일치하지 않습니다.")
 
 
+def _resolve_spot_name(category: schemas.PostCategory, spot_id: str) -> str:
+    name = tourism.get_spot_name(category.value, spot_id)
+    if name is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 장소입니다.")
+    return name
+
+
 def list_posts(
     db: Session,
     category: schemas.PostCategory | None,
+    spot_id: str | None,
     q: str | None,
     page: int,
     size: int,
@@ -29,9 +38,14 @@ def list_posts(
     conditions = []
     if category:
         conditions.append(Post.category == category.value)
+    if spot_id:
+        conditions.append(Post.spot_id == spot_id)
     if q:
         keyword = f"%{q}%"
-        conditions.append(Post.title.ilike(keyword) | Post.content.ilike(keyword))
+        # 반정규화된 spot_name 덕분에 장소명 검색도 조인 없이 처리된다.
+        conditions.append(
+            Post.title.ilike(keyword) | Post.content.ilike(keyword) | Post.spot_name.ilike(keyword)
+        )
 
     total = db.scalar(select(func.count()).select_from(Post).where(*conditions))
     items = db.scalars(
@@ -53,7 +67,15 @@ def get_post(db: Session, post_id: int) -> Post:
 
 
 def create_post(db: Session, data: schemas.PostCreate) -> Post:
-    post = Post(**data.model_dump())
+    spot_name = _resolve_spot_name(data.category, data.spot_id)
+    post = Post(
+        category=data.category.value,
+        spot_id=data.spot_id,
+        spot_name=spot_name,
+        title=data.title,
+        content=data.content,
+        password=data.password,
+    )
     db.add(post)
     db.commit()
     db.refresh(post)
@@ -63,6 +85,9 @@ def create_post(db: Session, data: schemas.PostCreate) -> Post:
 def update_post(db: Session, post_id: int, data: schemas.PostUpdate) -> Post:
     post = _get_or_404(db, post_id)
     _verify_password(post, data.password)
+    post.spot_name = _resolve_spot_name(data.category, data.spot_id)
+    post.category = data.category.value
+    post.spot_id = data.spot_id
     post.title = data.title
     post.content = data.content
     db.commit()

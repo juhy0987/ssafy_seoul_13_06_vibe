@@ -3,7 +3,6 @@ from pydantic import BaseModel
 
 class Spot(BaseModel):
     id: str
-    contentTypeId: int
     title: str
     address: str | None = None
     tel: str | None = None
@@ -11,7 +10,6 @@ class Spot(BaseModel):
     thumbnail: str | None = None
     lat: float | None = None
     lng: float | None = None
-    modifiedAt: str | None = None
 
 
 class SpotListResponse(BaseModel):
@@ -19,7 +17,6 @@ class SpotListResponse(BaseModel):
     contentType: str
     contentTypeId: int
     total: int
-    included: int
     items: list[Spot]
 
 

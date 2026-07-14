@@ -10,7 +10,10 @@ class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    category: Mapped[str] = mapped_column(String(20), index=True)  # 목록 카테고리 필터용
+    # 게시글은 특정 장소(spot)에 종속. category·spot_name은 장소 데이터에서 복사한 반정규화 필드.
+    category: Mapped[str] = mapped_column(String(20), index=True)
+    spot_id: Mapped[str] = mapped_column(String(20), index=True)
+    spot_name: Mapped[str] = mapped_column(String(200))
     title: Mapped[str] = mapped_column(String(200))
     content: Mapped[str] = mapped_column(Text)
     # 교육 목적의 의도된 설계: 평문 저장, 응답에는 절대 노출하지 않는다.
