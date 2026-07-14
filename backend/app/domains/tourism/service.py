@@ -58,7 +58,7 @@ def get_dataset_meta(dataset: str) -> schemas.SpotMetaResponse:
     )
 
 
-def _tokenize(text: str) -> list[str]:
+def tokenize(text: str) -> list[str]:
     stopwords = {
         '서울', '서울시', '서울의', '근처', '주변', '알려줘', '알려주세요', '추천', '가볼', '만한',
         '어디', '어떤', '있어', '있나요', '보여줘', '찾아줘', '한', '곳', '곳을', '명소', '정보',
@@ -87,10 +87,10 @@ def _score_item(item: dict, keywords: list[str]) -> int:
 
 
 def search_spots(message: str, history: list[dict] | None = None, limit: int = 3) -> list[tuple[str, dict]]:
-    keywords = _tokenize(message)
+    keywords = tokenize(message)
     if len(keywords) < 2 and history:
         last_user = next((entry.get('content', '') for entry in reversed(history) if entry.get('role') == 'user'), '')
-        keywords.extend(token for token in _tokenize(last_user) if token not in keywords)
+        keywords.extend(token for token in tokenize(last_user) if token not in keywords)
 
     prioritized = _dataset_priority(message)
     matches: list[tuple[int, str, dict]] = []
@@ -113,18 +113,3 @@ def data_label(dataset: str) -> str:
         'culture': '문화시설',
         'festivals': '축제·행사',
     }[dataset]
-
-
-def build_chat_reply(message: str, history: list[dict] | None = None) -> str:
-    keywords = _tokenize(message)
-    matches = search_spots(message, history)
-    if not matches:
-        if keywords:
-            return f"서울에서 '{keywords[0]}'와 잘 맞는 장소를 찾지 못했어요. 다른 키워드로 다시 물어봐 주세요."
-        return '서울 관광지, 문화시설, 축제 정보를 물어보면 바로 찾아드릴게요.'
-
-    lines = ['서울에서 추천할 만한 곳을 찾았어요:']
-    for dataset, item in matches:
-        address = item.get('address') or '주소 정보 없음'
-        lines.append(f"- [{data_label(dataset)}] {item.get('title')} · {address}")
-    return '\n'.join(lines)

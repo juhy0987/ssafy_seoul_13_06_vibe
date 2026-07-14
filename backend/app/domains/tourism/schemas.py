@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class Spot(BaseModel):
     id: str
-    contentTypeId: str
+    contentTypeId: int
     title: str
     address: str | None = None
     tel: str | None = None
