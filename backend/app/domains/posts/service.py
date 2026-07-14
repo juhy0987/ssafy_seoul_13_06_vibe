@@ -19,8 +19,16 @@ def _verify_password(post: Post, password: str) -> None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "비밀번호가 일치하지 않습니다.")
 
 
-def list_posts(db: Session, q: str | None, page: int, size: int) -> schemas.PostListResponse:
+def list_posts(
+    db: Session,
+    category: schemas.PostCategory | None,
+    q: str | None,
+    page: int,
+    size: int,
+) -> schemas.PostListResponse:
     conditions = []
+    if category:
+        conditions.append(Post.category == category.value)
     if q:
         keyword = f"%{q}%"
         conditions.append(Post.title.ilike(keyword) | Post.content.ilike(keyword))

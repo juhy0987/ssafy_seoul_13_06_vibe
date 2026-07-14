@@ -1,15 +1,24 @@
 from datetime import datetime
+from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class PostCategory(str, Enum):
+    tour = "관광지"
+    food = "맛집"
+    festival = "축제행사"
+
+
 class PostCreate(BaseModel):
+    category: PostCategory
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
     password: str = Field(min_length=1, max_length=100)
 
 
 class PostUpdate(BaseModel):
+    category: PostCategory
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
     password: str = Field(min_length=1, max_length=100)
@@ -24,6 +33,7 @@ class PostListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    category: PostCategory
     title: str
     view_count: int
     created_at: datetime
@@ -33,6 +43,7 @@ class PostDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    category: PostCategory
     title: str
     content: str
     view_count: int

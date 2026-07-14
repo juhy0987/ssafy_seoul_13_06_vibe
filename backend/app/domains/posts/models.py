@@ -10,6 +10,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    category: Mapped[str] = mapped_column(String(20), index=True)  # 목록 카테고리 필터용
     title: Mapped[str] = mapped_column(String(200))
     content: Mapped[str] = mapped_column(Text)
     # 교육 목적의 의도된 설계: 평문 저장, 응답에는 절대 노출하지 않는다.
