@@ -70,18 +70,24 @@ def _name_index(category: str) -> dict[str, str]:
     return {spot['id']: spot['title'] for spot in _spots(category)}
 
 
-def list_spots(dataset: str, limit: int = 6, with_image_only: bool = True) -> schemas.SpotListResponse:
+def list_spots(
+    dataset: str,
+    page: int = 1,
+    size: int = 10,
+    with_image_only: bool = True,
+) -> schemas.SpotListResponse:
     category = _category_of(dataset)
     data = _load(category)
     spots = _spots(category)
     if with_image_only:
         spots = [spot for spot in spots if spot['thumbnail'] or spot['image']]
+    start = (page - 1) * size
     return schemas.SpotListResponse(
         region=data['region'],
         contentType=data['contentType'],
         contentTypeId=data['contentTypeId'],
-        total=data['total'],
-        items=spots[:limit],
+        total=len(spots),  # 페이지네이션 대상(필터 적용 후) 총 개수
+        items=spots[start:start + size],
     )
 
 
