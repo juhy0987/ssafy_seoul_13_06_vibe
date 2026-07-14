@@ -6,7 +6,7 @@ import SpotGrid from '@/components/home/SpotGrid.vue'
 import PostList from '@/components/board/PostList.vue'
 import SectionHeading from '@/components/common/SectionHeading.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
-import { getDatasetMeta, listSpots } from '@/api/tourism'
+import { listSpots } from '@/api/tourism'
 import { listRecentPosts } from '@/api/posts'
 import { CATEGORIES } from '@/config/region'
 
@@ -24,14 +24,11 @@ const festivalsError = ref('')
 
 async function loadSpots() {
   try {
-    const [items, meta] = await Promise.all([
-      listSpots('attractions', { limit: 4 }),
-      getDatasetMeta('attractions'),
-    ])
-    attractions.value = items
-    counts.value.attractions = meta.total
+    const response = await listSpots('attractions', { limit: 4 })
+    attractions.value = response.items
+    counts.value.attractions = response.total
   } catch (err) {
-    spotsError.value = `${err.message} — npm run prepare:data 를 먼저 실행했는지 확인해주세요.`
+    spotsError.value = `${err.message} — 백엔드 /api/spots 연결을 확인해주세요.`
   } finally {
     loadingSpots.value = false
   }
@@ -39,14 +36,11 @@ async function loadSpots() {
 
 async function loadFestivals() {
   try {
-    const [items, meta] = await Promise.all([
-      listSpots('festivals', { limit: 4 }),
-      getDatasetMeta('festivals'),
-    ])
-    festivals.value = items
-    counts.value.festivals = meta.total
+    const response = await listSpots('festivals', { limit: 4 })
+    festivals.value = response.items
+    counts.value.festivals = response.total
   } catch (err) {
-    festivalsError.value = `${err.message} — npm run prepare:data 를 먼저 실행했는지 확인해주세요.`
+    festivalsError.value = `${err.message} — 백엔드 /api/spots 연결을 확인해주세요.`
   } finally {
     loadingFestivals.value = false
   }

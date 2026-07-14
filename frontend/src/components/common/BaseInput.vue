@@ -13,7 +13,8 @@ const model = defineModel({ type: String, default: '' })
 <template>
   <component
     :is="as"
-    v-model="model"
+    :value="model"
+    @input="model = $event.target.value"
     class="input"
     :class="{ 'input--invalid': invalid, 'input--area': as === 'textarea' }"
     :type="as === 'input' ? type : undefined"
