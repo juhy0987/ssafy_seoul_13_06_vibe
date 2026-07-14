@@ -10,7 +10,10 @@ from app.domains.tourism import schemas
 # 단일 데이터 원천: 제공 공공데이터(서울) — backend 내부로 자기완결
 SEOUL_DATA_ROOT = Path(__file__).resolve().parents[3] / 'data' / '서울'
 
-# /api/spots 는 프론트 계약(영문 dataset 키)을 유지하고, 내부적으로 카테고리에 매핑한다.
+# 제공 공공데이터(서울) 카테고리 — posts.PostCategory 와 동일 집합
+CATEGORIES = ('관광지', '레포츠', '문화시설', '쇼핑', '숙박', '여행코스', '축제공연행사')
+
+# /api/spots 는 프론트 계약(레거시 영문 키)도 함께 받아 카테고리에 매핑한다.
 DATASET_ALIAS = {
     'attractions': '관광지',
     'culture': '문화시설',
@@ -22,6 +25,8 @@ CHAT_CATEGORIES = ('관광지', '문화시설', '축제공연행사')
 
 
 def _category_of(dataset: str) -> str:
+    if dataset in CATEGORIES:
+        return dataset
     category = DATASET_ALIAS.get(dataset)
     if not category:
         raise HTTPException(status.HTTP_404_NOT_FOUND, '지원하지 않는 관광 데이터셋입니다.')
