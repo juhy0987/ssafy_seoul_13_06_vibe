@@ -11,8 +11,8 @@ from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnableParallel
-# from langchain_openai import ChatOpenAI  # 테스트를 위해 Gemini로 대체(주석 처리)
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
+# from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import settings
 from app.domains.chat.rag.embeddings import get_embeddings
@@ -64,10 +64,10 @@ def _chain():
             ("human", HUMAN_TEMPLATE),
         ]
     )
-    # llm = ChatOpenAI(model=settings.chat_model, temperature=0.3, api_key=settings.openai_api_key)
-    llm = ChatGoogleGenerativeAI(
-        model=settings.gemini_model, temperature=0.3, google_api_key=settings.google_api_key
-    )
+    llm = ChatOpenAI(model=settings.chat_model, temperature=0.3, api_key=settings.openai_api_key)
+    # llm = ChatGoogleGenerativeAI(
+    #     model=settings.gemini_model, temperature=0.3, google_api_key=settings.google_api_key
+    # )
     return (
         RunnableParallel(
             context=RunnableLambda(lambda x: _retrieve_context(x["question"])),
