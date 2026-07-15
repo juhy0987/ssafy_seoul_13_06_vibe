@@ -8,7 +8,7 @@ import BaseInput from '@/components/common/BaseInput.vue'
 import SkeletonBlock from '@/components/common/SkeletonBlock.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { formatShortDate } from '@/utils/format'
-import { getPost, deletePost } from '@/api/posts'
+import { getPost, deletePost, verifyPassword } from '@/api/posts'
 
 const props = defineProps({
   category: { type: String, required: true },
@@ -57,22 +57,21 @@ async function confirmPassword() {
 
   try {
     if (pendingAction.value === 'edit') {
-      // 비밀번호 검증 (실제로는 백엔드에서 검증해야 함)
-      // 여기서는 수정 화면으로 이동하는 것으로 처리
-      if (post.value.password === password.value) {
-        router.push({
-          name: 'post-edit',
-          params: { category: props.category, id: props.id },
-        })
-      } else {
-        passwordError.value = '비밀번호가 일치하지 않습니다.'
-      }
+      // 백엔드에서 비밀번호를 검증한다(POST /api/posts/{id}/verify).
+      // 성공하면(204) 수정 화면으로 이동, 불일치면 403 이 던져진다.
+      await verifyPassword(props.id, password.value)
+      router.push({
+        name: 'post-edit',
+        params: { category: props.category, id: props.id },
+      })
     } else if (pendingAction.value === 'delete') {
       await deletePost(props.id, password.value)
       router.push({ name: 'board', params: { category: props.category } })
     }
   } catch (err) {
-    passwordError.value = '요청 처리 중 오류가 발생했습니다.'
+    // 백엔드는 비밀번호 불일치 시 403 을 반환한다.
+    passwordError.value =
+      err?.status === 403 ? '비밀번호가 일치하지 않습니다.' : '요청 처리 중 오류가 발생했습니다.'
     console.error(err)
   }
 }

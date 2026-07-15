@@ -78,3 +78,32 @@ export const CATEGORY_BY_SLUG = Object.fromEntries(CATEGORIES.map((c) => [c.slug
 export function findCategory(slug) {
   return CATEGORY_BY_SLUG[slug] ?? null
 }
+
+/**
+ * 백엔드 posts.category(enum)와 TourAPI 관광 카테고리는 모두 한글 값을 쓴다.
+ * 프론트는 영문 slug 로 동작하므로 API 경계에서 아래 표로 상호 변환한다.
+ * (festival 은 표시 라벨 '축제행사' 와 백엔드 값 '축제공연행사' 가 달라 명시적으로 매핑)
+ */
+const API_CATEGORY_BY_SLUG = {
+  attraction: '관광지',
+  leisure: '레포츠',
+  culture: '문화시설',
+  shopping: '쇼핑',
+  lodging: '숙박',
+  course: '여행코스',
+  festival: '축제공연행사',
+}
+
+const SLUG_BY_API_CATEGORY = Object.fromEntries(
+  Object.entries(API_CATEGORY_BY_SLUG).map(([slug, value]) => [value, slug]),
+)
+
+/** slug → 백엔드/TourAPI 한글 카테고리(게시글 category · 관광 dataset 공용) */
+export function toApiCategory(slug) {
+  return API_CATEGORY_BY_SLUG[slug] ?? slug
+}
+
+/** 백엔드 한글 카테고리 → 프론트 slug */
+export function toCategorySlug(apiCategory) {
+  return SLUG_BY_API_CATEGORY[apiCategory] ?? apiCategory
+}
