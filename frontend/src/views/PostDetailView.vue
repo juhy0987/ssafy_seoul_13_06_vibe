@@ -99,6 +99,7 @@ onMounted(() => fetchPost())
     <article v-else-if="post" class="detail__article">
       <header class="detail__header">
         <h1 class="detail__title">{{ post.title }}</h1>
+        <p v-if="post.spot_name" class="detail__spot">📍 {{ post.spot_name }}</p>
         <div class="detail__meta lh-nums">
           <span>{{ formatShortDate(post.created_at) }}</span>
           <span>조회 {{ post.view_count }}</span>
@@ -205,6 +206,13 @@ onMounted(() => fetchPost())
 .detail__title {
   font-size: var(--lh-text-lg);
   font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.detail__spot {
+  font-size: var(--lh-text-sm);
+  font-weight: 600;
+  color: var(--lh-accent-strong);
   margin-bottom: 0.5rem;
 }
 

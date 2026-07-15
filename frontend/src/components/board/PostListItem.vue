@@ -16,6 +16,7 @@ defineProps({
     >
       <span v-if="showCategory" class="row__badge">{{ categoryLabel }}</span>
       <span class="row__title">{{ post.title }}</span>
+      <span v-if="post.spot_name" class="row__spot">📍 {{ post.spot_name }}</span>
       <span class="row__views lh-nums">{{ post.view_count }}</span>
       <span class="row__date lh-nums">{{ formatShortDate(post.created_at) }}</span>
     </RouterLink>
@@ -67,11 +68,27 @@ defineProps({
   transition: color 0.12s var(--lh-ease);
 }
 
+.row__spot {
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--lh-text-xs);
+  color: var(--lh-accent-strong);
+}
+
 .row__views,
 .row__date {
   flex-shrink: 0;
   font-size: var(--lh-text-xs);
   color: var(--lh-ink-faint);
+}
+
+@media (max-width: 640px) {
+  .row__spot {
+    display: none;
+  }
 }
 
 .row__views::before {

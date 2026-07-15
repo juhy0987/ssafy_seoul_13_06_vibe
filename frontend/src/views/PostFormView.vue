@@ -7,6 +7,7 @@ import BaseInput from '@/components/common/BaseInput.vue'
 import SkeletonBlock from '@/components/common/SkeletonBlock.vue'
 import { getPost, createPost, updatePost } from '@/api/posts'
 import { listSpotsForCategory } from '@/api/tourism'
+import { CATEGORIES } from '@/config/region'
 
 const props = defineProps({
   category: { type: String, required: true },
@@ -16,11 +17,15 @@ const props = defineProps({
 const router = useRouter()
 const isEditing = computed(() => !!props.id)
 
+// 카테고리는 라우트 param 을 초기값으로만 쓰고, 폼에서 사용자가 바꿀 수 있게 한다.
+// (기존엔 라우트 param 으로 고정돼 홈에서 진입하면 항상 관광지로 작성됐다.)
+const selectedCategory = ref(props.category)
 const title = ref('')
 const content = ref('')
 const password = ref('')
 const spotId = ref('')
 const spots = ref([])
+const editingSpotName = ref('')
 const spotsLoading = ref(false)
 const loading = ref(false)
 const fetchLoading = ref(false)
@@ -29,15 +34,27 @@ const errors = ref({})
 // 게시글은 특정 장소(spot_id)에 연결된다. 백엔드가 필수로 요구하므로 선택 UI 를 제공한다.
 async function loadSpots() {
   spotsLoading.value = true
+  delete errors.value.spots
   try {
-    const res = await listSpotsForCategory(props.category, { limit: 50 })
+    const res = await listSpotsForCategory(selectedCategory.value, { limit: 50 })
     spots.value = res.items ?? []
+    // 수정 중인 장소가 목록(최대 50개)에 없으면 선택값이 비지 않도록 보강한다.
+    if (spotId.value && !spots.value.some((s) => s.id === spotId.value)) {
+      spots.value = [{ id: spotId.value, title: editingSpotName.value || spotId.value }, ...spots.value]
+    }
   } catch (err) {
     console.error('장소 목록 로드 실패:', err)
     errors.value.spots = '장소 목록을 불러오지 못했습니다. 백엔드 /api/spots 연결을 확인해주세요.'
   } finally {
     spotsLoading.value = false
   }
+}
+
+// 카테고리를 바꾸면 장소 목록이 달라지므로 선택값을 초기화하고 다시 불러온다.
+async function onCategoryChange() {
+  spotId.value = ''
+  editingSpotName.value = ''
+  await loadSpots()
 }
 
 async function loadPostData() {
@@ -50,10 +67,9 @@ async function loadPostData() {
       title.value = post.title
       content.value = post.content
       spotId.value = post.spot_id ?? ''
-      // 수정 중인 장소가 목록(최대 50개)에 없으면 선택값이 비지 않도록 보강한다.
-      if (post.spot_id && !spots.value.some((s) => s.id === post.spot_id)) {
-        spots.value = [{ id: post.spot_id, title: post.spot_name ?? post.spot_id }, ...spots.value]
-      }
+      editingSpotName.value = post.spot_name ?? ''
+      // 실제 저장된 카테고리로 맞춘다(라우트 param 과 다를 수 있음).
+      if (post.category) selectedCategory.value = post.category
     }
   } catch (err) {
     console.error('게시글 로드 실패:', err)
@@ -96,7 +112,7 @@ async function submit() {
       title: title.value.trim(),
       content: content.value.trim(),
       password: password.value,
-      category: props.category,
+      category: selectedCategory.value,
       spot_id: spotId.value,
     }
 
@@ -106,7 +122,7 @@ async function submit() {
       await createPost(payload)
     }
 
-    router.push({ name: 'board', params: { category: props.category } })
+    router.push({ name: 'board', params: { category: selectedCategory.value } })
   } catch (err) {
     console.error('저장 실패:', err)
     errors.value.submit = '저장 중 오류가 발생했습니다.'
@@ -120,8 +136,9 @@ function cancel() {
 }
 
 onMounted(async () => {
-  await loadSpots()
+  // 수정 시엔 저장된 카테고리·spot_id 를 먼저 확정한 뒤 그 카테고리의 장소 목록을 불러온다.
   await loadPostData()
+  await loadSpots()
 })
 </script>
 
@@ -146,6 +163,22 @@ onMounted(async () => {
       <div v-if="errors.submit" class="form__error">
         ⚠️ {{ errors.submit }}
       </div>
+
+      <!-- Category field: 게시글 카테고리 선택 -->
+      <BaseField label="카테고리" hint="글을 등록할 게시판을 선택하세요" required>
+        <template #default="{ id }">
+          <select
+            :id="id"
+            v-model="selectedCategory"
+            class="form__select"
+            @change="onCategoryChange"
+          >
+            <option v-for="c in CATEGORIES" :key="c.slug" :value="c.slug">
+              {{ c.icon }} {{ c.label }}
+            </option>
+          </select>
+        </template>
+      </BaseField>
 
       <!-- Spot field: 게시글이 연결될 장소(백엔드 필수) -->
       <BaseField
