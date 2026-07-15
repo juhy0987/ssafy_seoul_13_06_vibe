@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import HeroBanner from '@/components/home/HeroBanner.vue'
-import CategoryNav from '@/components/home/CategoryNav.vue'
 import SeoulMap from '@/components/home/SeoulMap.vue'
 import SpotGrid from '@/components/home/SpotGrid.vue'
 import PostList from '@/components/board/PostList.vue'
@@ -47,13 +46,11 @@ onMounted(() => {
   <div class="lh-container home">
     <HeroBanner :spot-count="counts.attractions" />
 
-    <CategoryNav />
-
     <section class="home__section">
       <SectionHeading
         eyebrow="Map"
         title="지도로 보기"
-        description="서울 권역 지도에서 위치를 확인해보세요"
+        description="카테고리를 선택하면 해당 장소들이 지도에 표시됩니다"
       />
 
       <SeoulMap />
