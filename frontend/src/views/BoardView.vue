@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import PostList from '@/components/board/PostList.vue'
 import BasePagination from '@/components/common/BasePagination.vue'
 import BaseInput from '@/components/common/BaseInput.vue'
@@ -49,6 +49,17 @@ function onPageChange(next) {
   page.value = next
   fetchPosts()
 }
+
+// 헤더 탭으로 카테고리를 바꾸면 같은 컴포넌트가 재사용되므로(라우트 param 만 변경),
+// props.category 변화를 감시해 목록을 다시 불러온다. (검색어·페이지는 초기화)
+watch(
+  () => props.category,
+  () => {
+    search.value = ''
+    page.value = 1
+    fetchPosts()
+  },
+)
 
 onMounted(() => fetchPosts())
 </script>
