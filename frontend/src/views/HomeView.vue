@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import HeroBanner from '@/components/home/HeroBanner.vue'
 import SeoulMap from '@/components/home/SeoulMap.vue'
 import SpotGrid from '@/components/home/SpotGrid.vue'
@@ -20,15 +20,37 @@ const loadingSpots = ref(true)
 const loadingPosts = ref(true)
 const spotsError = ref('')
 
-async function loadSpots() {
+// 관광지 카드 좌/우 페이지네이션 (백엔드 /api/spots 의 page·size 사용)
+const SPOTS_PAGE_SIZE = 4
+const spotsPage = ref(1)
+const spotsTotal = ref(0)
+const totalSpotPages = computed(() =>
+  Math.max(1, Math.ceil(spotsTotal.value / SPOTS_PAGE_SIZE)),
+)
+const hasPrevSpots = computed(() => spotsPage.value > 1)
+const hasNextSpots = computed(() => spotsPage.value < totalSpotPages.value)
+
+async function loadSpots(page = 1) {
+  loadingSpots.value = true
+  spotsError.value = ''
   try {
-    const response = await listSpots('attractions', { limit: 4 })
+    const response = await listSpots('attractions', { limit: SPOTS_PAGE_SIZE, page })
     attractions.value = response.items
+    spotsTotal.value = response.total
+    spotsPage.value = page
   } catch (err) {
     spotsError.value = `${err.message} — 백엔드 /api/spots 연결을 확인해주세요.`
   } finally {
     loadingSpots.value = false
   }
+}
+
+function prevSpots() {
+  if (hasPrevSpots.value && !loadingSpots.value) loadSpots(spotsPage.value - 1)
+}
+
+function nextSpots() {
+  if (hasNextSpots.value && !loadingSpots.value) loadSpots(spotsPage.value + 1)
 }
 
 async function loadSummary() {
@@ -79,7 +101,35 @@ onMounted(() => {
         </template>
       </SectionHeading>
 
-      <SpotGrid :spots="attractions" :loading="loadingSpots" :error="spotsError" />
+      <div class="spots-carousel">
+        <button
+          class="spots-carousel__nav"
+          type="button"
+          aria-label="이전 관광지"
+          :disabled="!hasPrevSpots || loadingSpots"
+          @click="prevSpots"
+        >
+          ‹
+        </button>
+
+        <div class="spots-carousel__body">
+          <SpotGrid :spots="attractions" :loading="loadingSpots" :error="spotsError" />
+        </div>
+
+        <button
+          class="spots-carousel__nav"
+          type="button"
+          aria-label="다음 관광지"
+          :disabled="!hasNextSpots || loadingSpots"
+          @click="nextSpots"
+        >
+          ›
+        </button>
+      </div>
+
+      <p v-if="!spotsError" class="spots-carousel__page lh-nums">
+        {{ spotsPage }} / {{ totalSpotPages }}
+      </p>
     </section>
 
     <section class="home__section">
@@ -121,5 +171,60 @@ onMounted(() => {
   border-radius: var(--lh-radius-m);
   padding: 0.25rem 1rem;
   box-shadow: var(--lh-shadow-card);
+}
+
+.spots-carousel {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.spots-carousel__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.spots-carousel__nav {
+  flex-shrink: 0;
+  width: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--lh-border-strong);
+  border-radius: var(--lh-radius-m);
+  background: var(--lh-surface);
+  color: var(--lh-ink);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--lh-shadow-card);
+  transition: border-color 0.15s var(--lh-ease), background-color 0.15s var(--lh-ease),
+    transform 0.15s var(--lh-ease);
+}
+
+.spots-carousel__nav:hover:not(:disabled) {
+  border-color: var(--lh-accent);
+  transform: translateY(-1px);
+}
+
+.spots-carousel__nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.spots-carousel__page {
+  text-align: center;
+  font-size: var(--lh-text-xs);
+  color: var(--lh-ink-faint);
+}
+
+@media (max-width: 640px) {
+  .spots-carousel {
+    gap: 0.4rem;
+  }
+
+  .spots-carousel__nav {
+    width: 2.25rem;
+    font-size: 1.25rem;
+  }
 }
 </style>
