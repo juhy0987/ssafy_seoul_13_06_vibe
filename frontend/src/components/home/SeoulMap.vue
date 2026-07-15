@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { CATEGORIES } from '@/config/region'
-import { listSpotsForCategory } from '@/api/tourism'
+import { randomSpotsForCategory } from '@/api/tourism'
 
 // 서울 시청 좌표를 중심으로 권역 전체가 보이도록 확대한다.
 const SEOUL_CENTER = [37.5665, 126.978]
@@ -65,7 +65,7 @@ async function selectCategory(slug) {
   loading.value = true
   error.value = ''
   try {
-    const res = await listSpotsForCategory(slug, { limit: 50 })
+    const res = await randomSpotsForCategory(slug, { size: 50 })
     renderMarkers(res.items ?? [])
   } catch (err) {
     console.error('장소 조회 실패:', err)
