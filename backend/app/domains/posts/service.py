@@ -1,7 +1,8 @@
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from app.core.database import SessionLocal
 from app.domains.posts import schemas
 from app.domains.posts.models import Post
 from app.domains.tourism import service as tourism
@@ -105,3 +106,25 @@ def delete_post(db: Session, post_id: int, password: str) -> None:
 def verify_post_password(db: Session, post_id: int, password: str) -> None:
     post = _get_or_404(db, post_id)
     _verify_password(post, password)
+
+
+def search_posts(query: str, limit: int = 5) -> list[dict]:
+    """챗봇 RAG용 게시글 키워드 검색(제목·내용·장소명). 평문 비밀번호는 절대 포함하지 않는다."""
+    keywords = tourism.tokenize(query)
+    if not keywords:
+        return []
+    conditions = [
+        Post.title.ilike(f"%{kw}%") | Post.content.ilike(f"%{kw}%") | Post.spot_name.ilike(f"%{kw}%")
+        for kw in keywords
+    ]
+    with SessionLocal() as db:
+        rows = db.scalars(
+            select(Post).where(or_(*conditions)).order_by(Post.id.desc()).limit(limit)
+        ).all()
+        return [
+            {
+                "id": row.id, "category": row.category, "spot_name": row.spot_name,
+                "title": row.title, "content": row.content,
+            }
+            for row in rows
+        ]
