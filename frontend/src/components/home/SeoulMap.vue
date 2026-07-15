@@ -135,6 +135,9 @@ onBeforeUnmount(() => {
   border-radius: var(--lh-radius-m);
   box-shadow: var(--lh-shadow-card);
   overflow: hidden;
+  /* Leaflet 내부의 높은 z-index(줌 컨트롤·팝업 등 ~1000)를 이 카드 안에 가둔다.
+     그렇지 않으면 루트 쌓임 맥락으로 새어나와 챗봇 위젯(z-index 80)을 덮는다. */
+  isolation: isolate;
 }
 
 .map-card__toolbar {
