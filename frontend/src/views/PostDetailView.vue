@@ -7,6 +7,7 @@ import BaseField from '@/components/common/BaseField.vue'
 import BaseInput from '@/components/common/BaseInput.vue'
 import SkeletonBlock from '@/components/common/SkeletonBlock.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import CommentSection from '@/components/board/CommentSection.vue'
 import { formatShortDate } from '@/utils/format'
 import { getPost, deletePost, verifyPassword } from '@/api/posts'
 
@@ -133,6 +134,8 @@ onMounted(() => fetchPost())
           </BaseButton>
         </div>
       </footer>
+
+      <CommentSection :post-id="id" />
     </article>
 
     <!-- Password Modal -->
