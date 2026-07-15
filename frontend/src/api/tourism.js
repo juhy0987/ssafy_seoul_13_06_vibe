@@ -21,6 +21,21 @@ export async function listSpotsForCategory(categorySlug, { limit = 50 } = {}) {
   return listSpots(toApiCategory(categorySlug), { limit, withImageOnly: false })
 }
 
+/**
+ * 카테고리별 랜덤 장소 추출. 응답 형식은 listSpots 와 동일한 SpotListResponse.
+ * (백엔드 GET /api/spots/{dataset}/random — size 최대 50)
+ */
+export async function randomSpots(dataset, { size = 50, withImageOnly = true } = {}) {
+  return request(`/spots/${dataset}/random`, {
+    params: { size, with_image_only: withImageOnly },
+  })
+}
+
+/** 게시판 카테고리(slug)에 해당하는 랜덤 장소를 불러온다(지도 표시용). */
+export async function randomSpotsForCategory(categorySlug, { size = 50 } = {}) {
+  return randomSpots(toApiCategory(categorySlug), { size, withImageOnly: false })
+}
+
 export async function getDatasetMeta(dataset) {
   return request(`/spots/${dataset}/meta`)
 }
