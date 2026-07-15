@@ -3,10 +3,8 @@ uvicorn[standard]
 sqlalchemy
 pydantic-settings
 
-onnxruntime
-tokenizers
-
+# Chatbot RAG (LangChain + Google AI Studio embeddings + sqlite3)
 langchain
 langchain-openai
+langchain-google-genai
 numpy
-

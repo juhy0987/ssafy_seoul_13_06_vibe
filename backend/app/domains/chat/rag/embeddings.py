@@ -1,55 +1,55 @@
+import time
 from functools import lru_cache
-from pathlib import Path
 
 import numpy as np
-import onnxruntime as ort
 from langchain_core.embeddings import Embeddings
-from tokenizers import Tokenizer
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-# 커밋된 INT8 ONNX 모델 — 런타임에 torch/transformers/HF 다운로드 불필요
-MODEL_DIR = Path(__file__).resolve().parents[4] / "models" / "kominilm-onnx-int8"
-
-_ORT_DTYPE = {"tensor(int64)": np.int64, "tensor(int32)": np.int32, "tensor(float)": np.float32}
+from app.core.config import settings
 
 
-class KoMiniLMOnnxEmbeddings(Embeddings):
-    """BM-K/KoMiniLM(ONNX INT8) 문장 임베딩. mean pooling + L2 정규화 → 코사인=내적."""
+def _normalize(vectors) -> np.ndarray:
+    arr = np.asarray(vectors, dtype=np.float32)
+    norms = np.clip(np.linalg.norm(arr, axis=1, keepdims=True), 1e-9, None)
+    return arr / norms
 
-    def __init__(self, model_dir: Path = MODEL_DIR):
-        self.tokenizer = Tokenizer.from_file(str(model_dir / "tokenizer.json"))
-        self.tokenizer.enable_truncation(max_length=512)
-        self.tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
-        self.session = ort.InferenceSession(
-            str(model_dir / "model_quantized.onnx"), providers=["CPUExecutionProvider"]
+
+class GoogleEmbeddings(Embeddings):
+    """Google AI Studio(무료 티어) 임베딩 API.
+
+    - 코사인=내적을 위해 L2 정규화한다.
+    - 무료 티어는 배치 미지원 → 요청당 1건(embedContent). 각 요청 사이에 최소 60/RPM 초
+      간격을 두어 분당 호출 제한(RPM)을 준수한다(과속 시 sleep).
+    """
+
+    def __init__(self):
+        self._embeddings = GoogleGenerativeAIEmbeddings(
+            model=settings.embedding_model,
+            google_api_key=settings.google_api_key,
         )
-        self._inputs = self.session.get_inputs()
+        self._min_interval = 60.0 / max(settings.embedding_rpm, 1)
+        self._last = 0.0
 
-    def _embed(self, texts: list[str]) -> np.ndarray:
-        encodings = self.tokenizer.encode_batch(texts)
-        arrays = {
-            "input_ids": np.array([e.ids for e in encodings], dtype=np.int64),
-            "attention_mask": np.array([e.attention_mask for e in encodings], dtype=np.int64),
-            "token_type_ids": np.array([e.type_ids for e in encodings], dtype=np.int64),
-        }
-        feeds = {
-            spec.name: arrays[spec.name].astype(_ORT_DTYPE.get(spec.type, np.int64))
-            for spec in self._inputs
-            if spec.name in arrays
-        }
-        last_hidden = self.session.run(None, feeds)[0]  # [B, T, 384]
-        mask = arrays["attention_mask"][..., None].astype(np.float32)
-        pooled = (last_hidden * mask).sum(1) / np.clip(mask.sum(1), 1e-9, None)
-        pooled /= np.clip(np.linalg.norm(pooled, axis=1, keepdims=True), 1e-9, None)
-        return pooled.astype(np.float32)
+    def _throttle(self) -> None:
+        wait = self._min_interval - (time.monotonic() - self._last)
+        if wait > 0:
+            time.sleep(wait)
+        self._last = time.monotonic()
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        return self._embed(list(texts)).tolist()
+        # 무료 티어는 배치(batchEmbedContents) 미지원 → 표준 단건(embedContent) 요청을 순차 처리
+        vectors = [self._embed_one(text) for text in texts]
+        return _normalize(vectors).tolist()
+
+    def _embed_one(self, text: str) -> list[float]:
+        self._throttle()  # 요청 전 대기(분당 상한 준수)
+        return self._embeddings.embed_query(text)
 
     def embed_query(self, text: str) -> list[float]:
-        return self._embed([text])[0].tolist()
+        return _normalize([self._embed_one(text)])[0].tolist()
 
 
 @lru_cache(maxsize=1)
-def get_embeddings() -> KoMiniLMOnnxEmbeddings:
-    """최초 호출 시 ONNX 세션·토크나이저를 로드한다."""
-    return KoMiniLMOnnxEmbeddings()
+def get_embeddings() -> GoogleEmbeddings:
+    """최초 호출 시 Google 임베딩 클라이언트를 초기화한다(GOOGLE_API_KEY 필요)."""
+    return GoogleEmbeddings()
