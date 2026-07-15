@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 import json
+import random
 import re
 
 from fastapi import HTTPException, status
@@ -88,6 +89,27 @@ def list_spots(
         contentTypeId=data['contentTypeId'],
         total=len(spots),  # 페이지네이션 대상(필터 적용 후) 총 개수
         items=spots[start:start + size],
+    )
+
+
+def random_spots(
+    dataset: str,
+    size: int = 50,
+    with_image_only: bool = True,
+) -> schemas.SpotListResponse:
+    category = _category_of(dataset)
+    data = _load(category)
+    spots = _spots(category)
+    if with_image_only:
+        spots = [spot for spot in spots if spot['thumbnail'] or spot['image']]
+    # random.sample 은 원본을 변형하지 않으므로 lru 캐시(_spots) 불변이 유지된다.
+    sample = random.sample(spots, k=min(size, len(spots)))
+    return schemas.SpotListResponse(
+        region=data['region'],
+        contentType=data['contentType'],
+        contentTypeId=data['contentTypeId'],
+        total=len(spots),  # 추출 대상 풀(필터 적용 후) 크기
+        items=sample,
     )
 
 

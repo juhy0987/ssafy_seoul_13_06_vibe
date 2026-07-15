@@ -25,3 +25,12 @@ def list_spots(
 @router.get('/{dataset}/meta', response_model=schemas.SpotMetaResponse, summary='관광 데이터 메타 조회')
 def get_dataset_meta(dataset: str):
     return service.get_dataset_meta(dataset)
+
+
+@router.get('/{dataset}/random', response_model=schemas.SpotListResponse, summary='카테고리별 랜덤 장소 추출')
+def random_spots(
+    dataset: str,
+    size: int = Query(default=50, ge=1, le=50),
+    with_image_only: bool = Query(default=True),
+):
+    return service.random_spots(dataset, size=size, with_image_only=with_image_only)
