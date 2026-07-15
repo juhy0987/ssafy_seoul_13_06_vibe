@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     google_api_key: str | None = None
     gemini_model: str = "gemini-1.5-flash"
     embedding_model: str = "gemini-embedding-001"  # Google AI Studio 무료 티어 임베딩
-    embedding_rpm: int = 60  # 무료 티어 RPM 한도. 무료 티어는 RPM보다 일일 한도(RPD)가 먼저 걸림
+    embedding_rpm: int = 1000  # 무료 티어 RPM 한도. 무료 티어는 RPM보다 일일 한도(RPD)가 먼저 걸림
     rag_top_k: int = 10
 
 
