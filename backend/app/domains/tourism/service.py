@@ -91,6 +91,26 @@ def list_spots(
     )
 
 
+def get_summary() -> schemas.SpotSummaryResponse:
+    """전체 카테고리 장소 수 합계와 카테고리별 내역을 반환한다."""
+    categories = []
+    grand_total = 0
+    region = ''
+    for category in CATEGORIES:
+        data = _load(category)
+        region = data['region']
+        grand_total += data['total']
+        categories.append(
+            schemas.SpotCategoryCount(
+                dataset=category,
+                contentType=data['contentType'],
+                contentTypeId=data['contentTypeId'],
+                total=data['total'],
+            )
+        )
+    return schemas.SpotSummaryResponse(region=region, total=grand_total, categories=categories)
+
+
 def get_dataset_meta(dataset: str) -> schemas.SpotMetaResponse:
     data = _load(_category_of(dataset))
     return schemas.SpotMetaResponse(

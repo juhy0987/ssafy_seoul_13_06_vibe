@@ -24,3 +24,8 @@ export async function listSpotsForCategory(categorySlug, { limit = 50 } = {}) {
 export async function getDatasetMeta(dataset) {
   return request(`/spots/${dataset}/meta`)
 }
+
+/** 전체 카테고리 장소 수 합계(+카테고리별 내역). 백엔드가 한 번에 집계해준다. */
+export async function getSpotsSummary() {
+  return request('/spots/summary')
+}

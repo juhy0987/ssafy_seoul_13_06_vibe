@@ -16,7 +16,7 @@ defineProps({
 
     <dl class="hero__stats lh-nums">
       <div class="hero__stat">
-        <dt>관광지</dt>
+        <dt>전체 장소</dt>
         <dd>{{ spotCount.toLocaleString('ko-KR') }}</dd>
       </div>
     </dl>

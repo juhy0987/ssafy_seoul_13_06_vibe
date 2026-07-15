@@ -6,14 +6,15 @@ import SpotGrid from '@/components/home/SpotGrid.vue'
 import PostList from '@/components/board/PostList.vue'
 import SectionHeading from '@/components/common/SectionHeading.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
-import { listSpots } from '@/api/tourism'
+import { listSpots, getSpotsSummary } from '@/api/tourism'
 import { listRecentPosts } from '@/api/posts'
 import { CATEGORIES } from '@/config/region'
 
 const attractions = ref([])
 const posts = ref([])
 
-const counts = ref({ attractions: 0 })
+// 히어로 배너에 표시할 전체 장소 수(모든 카테고리 합계)
+const totalSpots = ref(0)
 
 const loadingSpots = ref(true)
 const loadingPosts = ref(true)
@@ -23,11 +24,19 @@ async function loadSpots() {
   try {
     const response = await listSpots('attractions', { limit: 4 })
     attractions.value = response.items
-    counts.value.attractions = response.total
   } catch (err) {
     spotsError.value = `${err.message} — 백엔드 /api/spots 연결을 확인해주세요.`
   } finally {
     loadingSpots.value = false
+  }
+}
+
+async function loadSummary() {
+  try {
+    const summary = await getSpotsSummary()
+    totalSpots.value = summary.total
+  } catch (err) {
+    console.error('전체 장소 수 조회 실패:', err)
   }
 }
 
@@ -38,13 +47,14 @@ async function loadPosts() {
 
 onMounted(() => {
   loadSpots()
+  loadSummary()
   loadPosts()
 })
 </script>
 
 <template>
   <div class="lh-container home">
-    <HeroBanner :spot-count="counts.attractions" />
+    <HeroBanner :spot-count="totalSpots" />
 
     <section class="home__section">
       <SectionHeading

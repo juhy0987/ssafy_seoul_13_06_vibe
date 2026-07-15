@@ -25,3 +25,16 @@ class SpotMetaResponse(BaseModel):
     contentType: str
     contentTypeId: int
     total: int
+
+
+class SpotCategoryCount(BaseModel):
+    dataset: str  # 한글 카테고리명(관광지 등)
+    contentType: str
+    contentTypeId: int
+    total: int
+
+
+class SpotSummaryResponse(BaseModel):
+    region: str
+    total: int  # 전체 카테고리 장소 수 합계
+    categories: list[SpotCategoryCount]

@@ -6,6 +6,12 @@ from app.domains.tourism import schemas, service
 router = APIRouter(prefix='/api/spots', tags=['tourism'])
 
 
+@router.get('/summary', response_model=schemas.SpotSummaryResponse, summary='전체 관광 데이터 개수 합계')
+def get_summary():
+    # 주의: '/{dataset}' 보다 먼저 선언해야 'summary' 가 dataset 으로 잡히지 않는다.
+    return service.get_summary()
+
+
 @router.get('/{dataset}', response_model=schemas.SpotListResponse, summary='관광 데이터 목록 조회')
 def list_spots(
     dataset: str,
