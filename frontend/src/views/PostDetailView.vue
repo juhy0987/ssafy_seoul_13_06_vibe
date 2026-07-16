@@ -9,7 +9,7 @@ import SkeletonBlock from '@/components/common/SkeletonBlock.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import CommentSection from '@/components/board/CommentSection.vue'
 import { formatShortDate } from '@/utils/format'
-import { getPost, deletePost, verifyPassword } from '@/api/posts'
+import { getPost, deletePost, verifyPassword, likePost, unlikePost } from '@/api/posts'
 
 const props = defineProps({
   category: { type: String, required: true },
@@ -21,6 +21,42 @@ const router = useRouter()
 const post = ref(null)
 const loading = ref(false)
 const error = ref('')
+
+// 익명 커뮤니티라 서버는 좋아요 수만 관리하고, 사용자별 누른 상태는 localStorage로 유지한다.
+const LIKED_KEY = 'localhub:liked-posts'
+const liked = ref(false)
+const likeBusy = ref(false)
+
+function getLikedSet() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) ?? '[]'))
+  } catch {
+    return new Set()
+  }
+}
+
+function saveLikedSet(set) {
+  localStorage.setItem(LIKED_KEY, JSON.stringify([...set]))
+}
+
+async function toggleLike() {
+  if (likeBusy.value || !post.value) return
+  likeBusy.value = true
+  const set = getLikedSet()
+  const wasLiked = liked.value
+  try {
+    const res = wasLiked ? await unlikePost(props.id) : await likePost(props.id)
+    post.value.like_count = res.like_count
+    if (wasLiked) set.delete(Number(props.id))
+    else set.add(Number(props.id))
+    saveLikedSet(set)
+    liked.value = !wasLiked
+  } catch (err) {
+    console.error('좋아요 처리 실패:', err)
+  } finally {
+    likeBusy.value = false
+  }
+}
 
 const showPasswordModal = ref(false)
 const pendingAction = ref(null)
@@ -77,7 +113,10 @@ async function confirmPassword() {
   }
 }
 
-onMounted(() => fetchPost())
+onMounted(async () => {
+  await fetchPost()
+  liked.value = getLikedSet().has(Number(props.id))
+})
 </script>
 
 <template>
@@ -109,6 +148,20 @@ onMounted(() => fetchPost())
 
       <div class="detail__body">
         {{ post.content }}
+      </div>
+
+      <div class="detail__like">
+        <button
+          type="button"
+          class="like-btn"
+          :class="{ 'like-btn--on': liked }"
+          :aria-pressed="liked"
+          :disabled="likeBusy"
+          @click="toggleLike"
+        >
+          <span class="like-btn__icon" aria-hidden="true">{{ liked ? '♥' : '♡' }}</span>
+          좋아요 <span class="lh-nums">{{ post.like_count ?? 0 }}</span>
+        </button>
       </div>
 
       <footer class="detail__footer">
@@ -232,6 +285,45 @@ onMounted(() => fetchPost())
   color: var(--lh-ink);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.detail__like {
+  display: flex;
+  justify-content: center;
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--lh-border-strong);
+  border-radius: var(--lh-radius-full);
+  background: var(--lh-surface);
+  color: var(--lh-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s var(--lh-ease), color 0.15s var(--lh-ease);
+}
+
+.like-btn:hover:not(:disabled) {
+  border-color: var(--lh-accent);
+}
+
+.like-btn--on {
+  border-color: var(--lh-accent);
+  color: var(--lh-accent);
+}
+
+.like-btn__icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.like-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .detail__footer {

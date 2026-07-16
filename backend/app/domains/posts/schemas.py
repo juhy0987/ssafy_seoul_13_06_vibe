@@ -45,6 +45,7 @@ class PostListItem(BaseModel):
     spot_name: str
     title: str
     view_count: int
+    like_count: int
     created_at: datetime
 
 
@@ -58,6 +59,7 @@ class PostDetail(BaseModel):
     title: str
     content: str
     view_count: int
+    like_count: int
     created_at: datetime
     updated_at: datetime
 
@@ -65,3 +67,10 @@ class PostDetail(BaseModel):
 class PostListResponse(BaseModel):
     total: int
     items: list[PostListItem]
+
+
+class LikeResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    like_count: int

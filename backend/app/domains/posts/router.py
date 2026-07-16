@@ -70,3 +70,23 @@ def delete_post(post_id: int, body: schemas.PasswordCheck, db: Session = Depends
 )
 def verify_password(post_id: int, body: schemas.PasswordCheck, db: Session = Depends(get_db)):
     service.verify_post_password(db, post_id, body.password)
+
+
+@router.post(
+    "/{post_id}/like",
+    response_model=schemas.LikeResponse,
+    summary="좋아요",
+    responses=NOT_FOUND,
+)
+def like_post(post_id: int, db: Session = Depends(get_db)):
+    return service.like_post(db, post_id)
+
+
+@router.delete(
+    "/{post_id}/like",
+    response_model=schemas.LikeResponse,
+    summary="좋아요 취소",
+    responses=NOT_FOUND,
+)
+def unlike_post(post_id: int, db: Session = Depends(get_db)):
+    return service.unlike_post(db, post_id)
