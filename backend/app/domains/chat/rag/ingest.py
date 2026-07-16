@@ -7,6 +7,7 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 
+from app.core.config import settings
 from app.domains.chat.rag.embeddings import get_embeddings
 from app.domains.chat.rag.store import SQLiteVectorStore
 
@@ -40,8 +41,9 @@ def main() -> None:
     documents = load_documents()
     store = SQLiteVectorStore(get_embeddings())
     store.init()
-    store.add(documents)
-    print(f"ingested {len(documents)} documents -> {store.db_path}")
+    print(f"embedding up to {len(documents)} docs (rpm<={settings.embedding_rpm}) ...")
+    store.add(documents, verbose=True)
+    print(f"store now has {store.count()}/{len(documents)} documents -> {store.db_path}")
 
 
 if __name__ == "__main__":

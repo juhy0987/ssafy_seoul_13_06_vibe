@@ -1,9 +1,12 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { useRouter } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { CATEGORIES } from '@/config/region'
 import { randomSpotsForCategory } from '@/api/tourism'
+
+const router = useRouter()
 
 // 서울 시청 좌표를 중심으로 권역 전체가 보이도록 확대한다.
 const SEOUL_CENTER = [37.5665, 126.978]
@@ -37,16 +40,55 @@ function escapeHtml(value) {
   )
 }
 
+// 마커 팝업(풍선) DOM 구성 — 네이버 지도 / 게시판 이동 버튼 포함.
+// Leaflet 팝업은 HTML 문자열이라 라우터 이동이 안 되므로, DOM 요소에 직접 리스너를 단다.
+function buildPopupContent(spot) {
+  const category = activeSlug.value // 현재 선택된 카테고리(마커 출처)를 캡처
+  const el = document.createElement('div')
+  el.className = 'spot-popup'
+  el.innerHTML =
+    `<strong class="spot-popup__title">${escapeHtml(spot.title)}</strong>` +
+    (spot.address ? `<div class="spot-popup__addr">${escapeHtml(spot.address)}</div>` : '')
+
+  const actions = document.createElement('div')
+  actions.className = 'spot-popup__actions'
+
+  const mapBtn = document.createElement('button')
+  mapBtn.type = 'button'
+  mapBtn.className = 'spot-popup__btn'
+  mapBtn.innerHTML = '<span aria-hidden="true">🗺️</span> 지도'
+  mapBtn.setAttribute('aria-label', `${spot.title} 네이버 지도에서 보기`)
+  mapBtn.addEventListener('click', () => {
+    window.open(
+      `https://map.naver.com/p/search/${encodeURIComponent(spot.title ?? '')}`,
+      '_blank',
+      'noopener',
+    )
+  })
+
+  const boardBtn = document.createElement('button')
+  boardBtn.type = 'button'
+  boardBtn.className = 'spot-popup__btn'
+  boardBtn.innerHTML = '<span aria-hidden="true">📝</span> 게시판'
+  boardBtn.setAttribute('aria-label', '이 카테고리 게시판으로 이동')
+  boardBtn.addEventListener('click', () => {
+    router.push({ name: 'board', params: { category } })
+  })
+
+  actions.append(mapBtn, boardBtn)
+  el.append(actions)
+  return el
+}
+
 function renderMarkers(spots) {
   if (!map || !markerLayer) return
   markerLayer.clearLayers()
 
   const located = spots.filter((s) => s.lat != null && s.lng != null)
   for (const spot of located) {
-    const popup = `<strong>${escapeHtml(spot.title)}</strong>${
-      spot.address ? `<br><span style="color:#666">${escapeHtml(spot.address)}</span>` : ''
-    }`
-    L.marker([spot.lat, spot.lng], { icon: pinIcon }).bindPopup(popup).addTo(markerLayer)
+    L.marker([spot.lat, spot.lng], { icon: pinIcon })
+      .bindPopup(buildPopupContent(spot))
+      .addTo(markerLayer)
   }
 
   count.value = located.length
@@ -135,6 +177,9 @@ onBeforeUnmount(() => {
   border-radius: var(--lh-radius-m);
   box-shadow: var(--lh-shadow-card);
   overflow: hidden;
+  /* Leaflet 내부의 높은 z-index(줌 컨트롤·팝업 등 ~1000)를 이 카드 안에 가둔다.
+     그렇지 않으면 루트 쌓임 맥락으로 새어나와 챗봇 위젯(z-index 80)을 덮는다. */
+  isolation: isolate;
 }
 
 .map-card__toolbar {
@@ -196,5 +241,43 @@ onBeforeUnmount(() => {
   .map-card__canvas {
     height: 16rem;
   }
+}
+
+/* 마커 팝업(풍선) — Leaflet이 동적 생성하는 DOM이라 :deep 로 도달한다 */
+:deep(.spot-popup__title) {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+:deep(.spot-popup__addr) {
+  margin-top: 2px;
+  color: var(--lh-ink-faint);
+  font-size: 12px;
+}
+
+:deep(.spot-popup__actions) {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+:deep(.spot-popup__btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid var(--lh-border-strong);
+  border-radius: var(--lh-radius-full);
+  background: var(--lh-surface);
+  color: var(--lh-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+:deep(.spot-popup__btn:hover) {
+  border-color: var(--lh-accent);
+  color: var(--lh-accent);
 }
 </style>

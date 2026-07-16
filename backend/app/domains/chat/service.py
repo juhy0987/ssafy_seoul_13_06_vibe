@@ -4,11 +4,11 @@ from app.domains.chat.rag import chain as rag
 
 def reply(message: str, history: list[dict] | None = None) -> str:
     history = history or []
-    try:
-        return rag.answer(message, history)
-    except Exception:
-        # RAG 미구성(의존성 미설치·임베딩 미적재·API 키 부재 등) 시 키워드 검색으로 폴백
-        return _keyword_reply(message, history)
+    # try:
+    return rag.answer(message, history)
+    # except Exception:
+    #     # RAG 미구성(의존성 미설치·임베딩 미적재·API 키 부재 등) 시 키워드 검색으로 폴백
+    #     return _keyword_reply(message, history)
 
 
 def _keyword_reply(message: str, history: list[dict]) -> str:

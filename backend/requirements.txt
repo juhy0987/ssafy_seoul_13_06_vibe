@@ -3,10 +3,8 @@ uvicorn[standard]
 sqlalchemy
 pydantic-settings
 
-# 챗봇 RAG (LangChain + jhgan/ko-sroberta-multitask + sqlite3)
+# Chatbot RAG (LangChain + Google AI Studio embeddings + sqlite3)
 langchain
-langchain-community
 langchain-openai
-langchain-huggingface
-sentence-transformers
+langchain-google-genai
 numpy

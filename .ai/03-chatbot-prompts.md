@@ -22,7 +22,7 @@ backend/data/서울/*.json               (원본 7종, 가독성 위주)
 - 임베딩 문서(page_content) = `"{title} {address}"`.
 
 ## 임베딩 · 스토어 (`embeddings.py` / `store.py`)
-- 모델: **`jhgan/ko-sroberta-multitask`** (한국어 특화, 768-dim, 경량 ~400MB). `normalize_embeddings=True` → **코사인 = 내적**. 모델명은 `settings.embedding_model`로 교체 가능.
+- 모델: **Google AI Studio 임베딩 API**(무료 티어, `gemini-embedding-001`, 768-dim). 어댑터에서 **L2 정규화** → **코사인 = 내적**. 모델명은 `settings.embedding_model`, 키는 `GOOGLE_API_KEY`. 로컬 모델/torch 불필요(HTTP API).
 - 스토어: 순수 **`sqlite3`** — 정규화 float32 벡터를 BLOB 저장(`spots` 테이블, PK `(category, spot_id)`). 조회 시 전량 로드 후 내적 상위 k. **네이티브 확장(sqlite-vec 등) 불필요 → 자기완결**.
 - `SQLiteRetriever`(LangChain `BaseRetriever`)로 래핑, `category` 필터 지원.
 
