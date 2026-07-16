@@ -1,14 +1,26 @@
 <script setup>
+import { computed } from 'vue'
 import { shortAddress } from '@/utils/format'
 
-defineProps({
+const props = defineProps({
   spot: { type: Object, required: true },
   badge: { type: String, default: '' },
 })
+
+// 카드 클릭 시 네이버 지도에서 장소명으로 검색한 결과로 이동(새 탭)
+const mapUrl = computed(
+  () => `https://map.naver.com/p/search/${encodeURIComponent(props.spot.title ?? '')}`,
+)
 </script>
 
 <template>
-  <article class="card">
+  <a
+    class="card"
+    :href="mapUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    :aria-label="`${spot.title} 네이버 지도에서 보기`"
+  >
     <div class="card__media">
       <img
         v-if="spot.thumbnail"
@@ -24,7 +36,7 @@ defineProps({
       <h3 class="card__title">{{ spot.title }}</h3>
       <p v-if="spot.address" class="card__addr">{{ shortAddress(spot.address) }}</p>
     </div>
-  </article>
+  </a>
 </template>
 
 <style scoped>
@@ -37,11 +49,19 @@ defineProps({
   overflow: hidden;
   box-shadow: var(--lh-shadow-card);
   transition: border-color 0.15s var(--lh-ease), transform 0.15s var(--lh-ease);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .card:hover {
   border-color: var(--lh-border-strong);
   transform: translateY(-2px);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--lh-accent);
+  outline-offset: 2px;
 }
 
 .card__media {
