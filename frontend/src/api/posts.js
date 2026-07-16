@@ -100,3 +100,12 @@ export function deletePost(id, password) {
 export function verifyPassword(id, password) {
   return request(`/posts/${id}/verify`, { method: 'POST', body: { password } })
 }
+
+/** 좋아요 / 좋아요 취소. 응답은 { id, like_count }. */
+export function likePost(id) {
+  return request(`/posts/${id}/like`, { method: 'POST' })
+}
+
+export function unlikePost(id) {
+  return request(`/posts/${id}/like`, { method: 'DELETE' })
+}

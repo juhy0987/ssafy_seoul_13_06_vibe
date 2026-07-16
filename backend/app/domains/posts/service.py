@@ -67,6 +67,23 @@ def get_post(db: Session, post_id: int) -> Post:
     return post
 
 
+def like_post(db: Session, post_id: int) -> Post:
+    post = _get_or_404(db, post_id)
+    post.like_count += 1
+    db.commit()
+    db.refresh(post)
+    return post
+
+
+def unlike_post(db: Session, post_id: int) -> Post:
+    post = _get_or_404(db, post_id)
+    if post.like_count > 0:  # 익명 좋아요: 0 미만으로 내려가지 않도록 방어
+        post.like_count -= 1
+        db.commit()
+        db.refresh(post)
+    return post
+
+
 def create_post(db: Session, data: schemas.PostCreate) -> Post:
     spot_name = _resolve_spot_name(data.category, data.spot_id)
     post = Post(
